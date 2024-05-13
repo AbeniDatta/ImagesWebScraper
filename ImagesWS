@@ -1,0 +1,36 @@
+import requests
+from bs4 import BeautifulSoup
+import re
+
+# URL of the website you want to scrape
+url = 'https://www.amazon.ca/stores/page/87D4CDC4-2491-4336-9B94-7E18DF72D4C2/?_encoding=UTF8&store_ref=SB_A0249916WZLFMQA6GXGD-A06158261DCCBMS78VISU&pd_rd_plhdr=t&aaxitk=aaf94d030208e91feeded1841a562530&hsa_cr_id=4578420140401&lp_asins=B07H3L7XJ4%2CB07GDBXHP2&lp_query=NutriBullet%20NBR-1201%2012-Piece%20High-Speed%20Blender%2FMixer%20System%2C%20Gray%20(600%20Watts)&lp_slot=auto-sparkle-hsa-tetris&ref_=sbx_be_s_sparkle_mcd_bkgd&pd_rd_w=2aUGW&content-id=amzn1.sym.8e0ef875-4e67-47f1-80ff-d43b41956e2f%3Aamzn1.sym.8e0ef875-4e67-47f1-80ff-d43b41956e2f&pf_rd_p=8e0ef875-4e67-47f1-80ff-d43b41956e2f&pf_rd_r=5HNRG3CZ4GWJDA5T73HK&pd_rd_wg=xh3FV&pd_rd_r=109666d9-fa49-4f62-aafc-a127cde1b4b6'
+
+# Send a GET request to the URL
+response = requests.get(url)
+
+# Parse the HTML content of the website
+soup = BeautifulSoup(response.text, 'html.parser')
+
+# Find all image elements on the page
+images = soup.find_all('img')
+
+# Extract the src attribute from each image tag
+image_urls = []
+for img in images:
+    src = img.get('src')
+    if src:
+        image_urls.append(src)
+    else:
+        data_src = img.get('data-src')
+        if data_src:
+            image_urls.append(data_src)
+        else:
+            srcset = img.get('srcset')
+            if srcset:
+                # Extract URLs from srcset attribute
+                urls = re.findall(r'(https?://\S+)', srcset)
+                image_urls.extend(urls)
+
+# Print out the image URLs
+for image_url in image_urls:
+    print(image_url)
